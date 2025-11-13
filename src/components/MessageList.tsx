@@ -29,7 +29,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 space-y-2">
+    <div className="h-full overflow-y-auto p-4 pb-24 space-y-2">
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}

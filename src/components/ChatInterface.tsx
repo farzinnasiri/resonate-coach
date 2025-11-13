@@ -68,22 +68,24 @@ export const ChatInterface: React.FC = () => {
         <MessageList messages={messages} />
       </div>
 
+      {/* Input */}
+      <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+
       {/* Typing Indicator */}
       {isTyping && (
-        <div className="px-4 py-2 bg-[var(--color-surface-container-low)]">
-          <div className="flex items-center space-x-2 text-sm text-[var(--color-on-surface-variant)]">
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        <div className="fixed bottom-20 left-0 right-0 px-4">
+          <div className="max-w-4xl mx-auto px-4 py-2">
+            <div className="flex items-center space-x-2 text-sm text-[var(--color-on-surface-variant)]">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+              <span>Responding...</span>
             </div>
-            <span>Responding...</span>
           </div>
         </div>
       )}
-
-      {/* Input */}
-      <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
     </div>
   );
 };

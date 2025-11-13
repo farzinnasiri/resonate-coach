@@ -12,13 +12,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Core color tokens */
-  --color-primary: #4f46e5;
+  /* Core color tokens - Anthropic inspired */
+  --color-primary: #da7756; /* Anthropic terra cotta accent */
   --color-on-primary: #ffffff;
-  --color-surface: #f9fafb;
-  --color-on-surface: #111827;
-  --color-on-surface-variant: #6b7280;
-  --color-outline: #e5e7eb;
+  --color-primary-container: #f9e8e2; /* Light terra cotta tint */
+  --color-on-primary-container: #5c2c1a; /* Dark terra cotta for contrast */
+  --color-surface: #eeece2; /* Anthropic warm off-white background */
+  --color-on-surface: #3d3929; /* Anthropic warm dark text color */
+  --color-on-surface-variant: #6b6652; /* Muted warm gray variant */
+  --color-outline: #d1cdbc; /* Warm subtle outline */
+  --color-surface-container-low: #f5f3e9; /* Slightly warmer surface low */
 
   /* Liquid (glass) tokens */
   --glass-bg: rgba(255, 255, 255, 0.65);
@@ -30,12 +33,29 @@
 .dark {
   --color-primary: #818cf8;
   --color-on-primary: #0b1020;
+  --color-primary-container: #1e293b;
+  --color-on-primary-container: #e0e7ff;
   --color-surface: #0b0f1a;
   --color-on-surface: #e5e7eb;
   --color-on-surface-variant: #9ca3af;
   --color-outline: #1f2937;
+  --color-surface-container-low: #1f2937;
 
   --glass-bg: rgba(10, 14, 22, 0.55);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 18px;
+}
+
+/* Prevent scroll shadow artifacts */
+* {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Specifically target message bubbles to prevent rendering artifacts */
+.message-bubble {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
