@@ -24,7 +24,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[var(--color-surface)] to-transparent pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[var(--color-surface)] to-transparent pointer-events-none z-10">
       <div className="relative max-w-4xl mx-auto pointer-events-auto">
         <textarea
           value={message}

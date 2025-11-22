@@ -26,6 +26,7 @@ export default function App() {
       </Router>
       <Toaster 
         position="top-right"
+        className="z-[10000]"
         toastOptions={{
           className: 'dark:bg-gray-800 dark:text-white',
         }}

@@ -10,23 +10,24 @@ interface TokenSetupProps {
 
 export const TokenSetup: React.FC<TokenSetupProps> = ({ onComplete }) => {
   const [apiKey, setApiKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   // Removed list models state
-  const { setApiToken } = useApp();
+  const { setApiToken, setOpenAIToken } = useApp();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!apiKey.trim()) {
-      toast.error('Please enter a valid API key');
+    if (!apiKey.trim() && !openaiKey.trim()) {
+      toast.error('Please enter at least one API key');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Test the API key by making a simple request
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+      // Test Google key
+      const response = apiKey.trim() ? await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,16 +39,40 @@ export const TokenSetup: React.FC<TokenSetupProps> = ({ onComplete }) => {
             }]
           }]
         })
-      });
+      }) : null;
 
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        const message = payload?.error?.message || 'Invalid API key or model access denied';
-        throw new Error(message);
+      if (response) {
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          const message = payload?.error?.message || 'Invalid Google API key or access denied';
+          throw new Error(message);
+        }
       }
 
-      // Save the API key
-      setApiToken(apiKey.trim());
+      // Optionally test OpenAI key
+      if (openaiKey.trim()) {
+        const oaiResp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiKey.trim()}`,
+          },
+          body: JSON.stringify({
+            model: 'gpt-5.1-chat-latest',
+            messages: [{ role: 'user', content: 'Hello' }],
+            max_completion_tokens: 8,
+          }),
+        });
+        const oaiPayload = await oaiResp.json().catch(() => null);
+        if (!oaiResp.ok) {
+          const message = oaiPayload?.error?.message || 'Invalid OpenAI API key';
+          throw new Error(message);
+        }
+      }
+
+      // Save keys
+      if (apiKey.trim()) setApiToken(apiKey.trim());
+      if (openaiKey.trim()) setOpenAIToken?.(openaiKey.trim());
       toast.success('API key saved successfully!');
       onComplete?.();
     } catch (error) {
@@ -76,7 +101,7 @@ export const TokenSetup: React.FC<TokenSetupProps> = ({ onComplete }) => {
             Welcome to Resonate Coach
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Get started by configuring your Google Gemini API key
+            Get started by configuring your Google Gemini and OpenAI API keys
           </p>
         </div>
 
@@ -97,11 +122,26 @@ export const TokenSetup: React.FC<TokenSetupProps> = ({ onComplete }) => {
               />
             </div>
 
+            <div>
+              <label htmlFor="openaiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                OpenAI API Key
+              </label>
+              <input
+                id="openaiKey"
+                type="password"
+                value={openaiKey}
+                onChange={(e) => setOpenaiKey(e.target.value)}
+                placeholder="Enter your OpenAI API key"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                disabled={isLoading}
+              />
+            </div>
+
             {/* Removed Gemini tooltip/help panel per request */}
 
             <button
               type="submit"
-              disabled={isLoading || !apiKey.trim()}
+              disabled={isLoading || (!apiKey.trim() && !openaiKey.trim())}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
             >
               {isLoading ? (

@@ -19,6 +19,9 @@ interface AppProviderProps {
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [apiToken, setApiTokenState] = useState<string | null>(null);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [openaiToken, setOpenaiToken] = useState<string | null>(null);
+  const [coachProvider, setCoachProviderState] = useState<'google' | 'openai'>(storageUtils.getCoachProvider());
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isTyping, setIsTyping] = useState(false);
@@ -27,11 +30,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Initialize state from localStorage
   useEffect(() => {
-    const token = storageUtils.getApiToken();
+    const token = storageUtils.getGoogleApiToken();
+    const oai = storageUtils.getOpenAIApiToken();
     const savedMessages = storageUtils.getChatHistory();
     const savedTheme = storageUtils.getThemePreference();
     
     setApiTokenState(token);
+    setGoogleToken(token);
+    setOpenaiToken(oai);
     setMessages(savedMessages);
     setTheme(savedTheme);
 
@@ -57,12 +63,28 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Save API token to localStorage and initialize fitness chain
   const handleSetApiToken = (token: string) => {
-    storageUtils.setApiToken(token);
+    storageUtils.setGoogleApiToken(token);
     setApiTokenState(token);
+    setGoogleToken(token);
     
     const chain = new FitnessCoachChain(token);
     chain.setChatHistory(messages);
     setFitnessChain(chain);
+  };
+
+  const handleSetOpenAIToken = (token: string) => {
+    storageUtils.setOpenAIApiToken(token);
+    setOpenaiToken(token);
+  };
+
+  const handleSetCoachProvider = (provider: 'google' | 'openai') => {
+    storageUtils.setCoachProvider(provider);
+    setCoachProviderState(provider);
+    if (googleToken) {
+      const chain = new FitnessCoachChain(googleToken);
+      chain.setChatHistory(messages);
+      setFitnessChain(chain);
+    }
   };
 
   // Add message to chat
@@ -81,6 +103,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const clearMessages = () => {
     setMessages(() => {
       storageUtils.clearChatHistory();
+      storageUtils.setCoachMemory('');
+      storageUtils.setObserverRounds(0);
+      storageUtils.setObserverEnabled(true);
+      storageUtils.clearObserverTask();
       if (fitnessChain) {
         fitnessChain.setChatHistory([]);
       }
@@ -110,17 +136,15 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   // Send message to AI
-  const sendMessageToAI = async (message: string): Promise<string> => {
+  const sendMessageToAI = async (): Promise<string> => {
     if (!fitnessChain) {
       throw new Error('AI coach not initialized. Please configure your API token.');
     }
 
     setIsTyping(true);
     try {
-      const response = await fitnessChain.sendMessage(message);
+      const response = await fitnessChain.sendMessage();
       return response;
-    } catch (error) {
-      throw error;
     } finally {
       setIsTyping(false);
     }
@@ -140,6 +164,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     // API Configuration
     apiToken,
     setApiToken: handleSetApiToken,
+    googleToken,
+    openaiToken,
+    setOpenAIToken: handleSetOpenAIToken,
+    coachProvider,
+    setCoachProvider: handleSetCoachProvider,
     
     // Chat State
     messages,

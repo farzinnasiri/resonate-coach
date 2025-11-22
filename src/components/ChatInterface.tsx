@@ -8,16 +8,18 @@ import { Trash2 } from 'lucide-react';
 import type { ChatMessage } from '@/types/index';
 
 export const ChatInterface: React.FC = () => {
-  const { messages, addMessage, isTyping, apiToken, clearMessages } = useApp();
+  const { messages, addMessage, isTyping, apiToken, googleToken, openaiToken, coachProvider, setCoachProvider, clearMessages } = useApp();
   const { sendMessageToAI } = useAI();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (content: string) => {
-    if (!apiToken) {
+    const hasToken = coachProvider === 'openai' ? !!openaiToken : !!googleToken || !!apiToken;
+    if (!hasToken) {
       toast.error('Please configure your API key first');
       return;
     }
 
+    setIsLoading(true);
     // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -26,11 +28,9 @@ export const ChatInterface: React.FC = () => {
       timestamp: new Date(),
     };
     addMessage(userMessage);
-
-    setIsLoading(true);
     try {
       // Send to AI and get response
-      const aiResponse = await sendMessageToAI(content);
+      const aiResponse = await sendMessageToAI();
       
       // Add AI response
       const aiMessage: ChatMessage = {
@@ -53,6 +53,26 @@ export const ChatInterface: React.FC = () => {
     <div className="h-screen flex flex-col bg-[var(--color-surface)]">
       {/* Top-right control */}
       <div className="px-4 py-3 flex justify-end gap-2">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <button
+            onClick={() => { setCoachProvider?.('google'); }}
+            className={`px-3 py-1 text-sm rounded-md ${coachProvider === 'google' ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          >
+            Google
+          </button>
+          <button
+            onClick={() => {
+              if (!openaiToken) {
+                toast.error('Please configure your OpenAI API key');
+                return;
+              }
+              setCoachProvider?.('openai');
+            }}
+            className={`px-3 py-1 text-sm rounded-md ${coachProvider === 'openai' ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          >
+            OpenAI
+          </button>
+        </div>
         <DarkModeToggle />
         <button
           onClick={() => { clearMessages(); toast.success('Conversation cleared'); }}
@@ -73,7 +93,7 @@ export const ChatInterface: React.FC = () => {
 
       {/* Typing Indicator */}
       {isTyping && (
-        <div className="fixed bottom-20 left-0 right-0 px-4">
+        <div className="fixed bottom-20 left-0 right-0 px-4 z-10">
           <div className="max-w-4xl mx-auto px-4 py-2">
             <div className="flex items-center space-x-2 text-sm text-[var(--color-on-surface-variant)]">
               <div className="flex space-x-1">

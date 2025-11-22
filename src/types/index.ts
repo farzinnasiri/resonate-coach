@@ -46,13 +46,18 @@ export interface AppContextType {
   // API Configuration
   apiToken: string | null;
   setApiToken: (token: string) => void;
+  googleToken?: string | null;
+  openaiToken?: string | null;
+  setOpenAIToken?: (token: string) => void;
+  coachProvider?: 'google' | 'openai';
+  setCoachProvider?: (provider: 'google' | 'openai') => void;
   
   // Chat State
   messages: ChatMessage[];
   addMessage: (message: ChatMessage) => void;
   clearMessages: () => void;
   // AI Interaction
-  sendMessageToAI: (message: string) => Promise<string>;
+  sendMessageToAI: () => Promise<string>;
   
   // UI State
   theme: 'light' | 'dark';
@@ -63,4 +68,10 @@ export interface AppContextType {
   // PWA State
   isInstallable: boolean;
   promptInstall: () => void;
+}
+
+export enum ObserverTask {
+  GatherUserProfile = 'gather_user_profile',
+  ExploreGoals = 'explore_goals',
+  CoachOnTraining = 'coach_on_training',
 }
