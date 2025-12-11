@@ -8,14 +8,38 @@ export const LOCAL_STORAGE_KEYS = {
   COACH_PROVIDER: 'resonate_coach_provider',
   CHAT_HISTORY: 'resonate_coach_messages',
   THEME_PREFERENCE: 'resonate_coach_theme',
+  COLOR_PROFILE: 'resonate_coach_color_profile',
   FIRST_VISIT: 'resonate_coach_first_visit',
   COACH_MEMORY: 'resonate_coach_memory',
+  PROFILE_MEMORY: 'resonate_profile_memory',
+  GOALS_MEMORY: 'resonate_goals_memory',
   OBSERVER_ENABLED: 'resonate_observer_enabled',
   OBSERVER_ROUNDS: 'resonate_observer_rounds',
   OBSERVER_TASK: 'resonate_observer_task',
+  USER_NAME: 'resonate_coach_user_name',
 } as const;
 
 export const storageUtils = {
+  // User Name
+  getUserName: (): string | null => {
+    return localStorage.getItem(LOCAL_STORAGE_KEYS.USER_NAME);
+  },
+
+  setUserName: (name: string): void => {
+    const trimmed = name.trim();
+    localStorage.setItem(LOCAL_STORAGE_KEYS.USER_NAME, trimmed);
+
+    const prefix = "The user's name is ";
+    const line = `${prefix}${trimmed}`;
+    const existing = localStorage.getItem(LOCAL_STORAGE_KEYS.COACH_MEMORY) || '';
+    const nextMemory = existing ? `${existing}\n${line}` : line;
+    localStorage.setItem(LOCAL_STORAGE_KEYS.COACH_MEMORY, nextMemory);
+  },
+
+  removeUserName: (): void => {
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_NAME);
+  },
+
   // API Token
   getApiToken: (): string | null => {
     return localStorage.getItem(LOCAL_STORAGE_KEYS.API_TOKEN);
@@ -101,6 +125,17 @@ export const storageUtils = {
     localStorage.setItem(LOCAL_STORAGE_KEYS.THEME_PREFERENCE, theme);
   },
 
+  getColorProfile: (): 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy' => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COLOR_PROFILE);
+    if (stored === 'teal' || stored === 'slate' || stored === 'plum' || stored === 'graphite' || stored === 'royalblue' || stored === 'deepnavy') return stored as 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy';
+    if (stored === 'jade') return 'jade';
+    return 'jade';
+  },
+
+  setColorProfile: (profile: 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy'): void => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.COLOR_PROFILE, profile);
+  },
+
   
   // First Visit
   getIsFirstVisit: (): boolean => {
@@ -120,6 +155,26 @@ export const storageUtils = {
 
   setCoachMemory: (memory: string): void => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.COACH_MEMORY, memory);
+  },
+
+  // Profile Memory
+  getProfileMemory: (): string => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROFILE_MEMORY);
+    return stored || '';
+  },
+
+  setProfileMemory: (memory: string): void => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.PROFILE_MEMORY, memory);
+  },
+
+  // Goals Memory
+  getGoalsMemory: (): string => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GOALS_MEMORY);
+    return stored || '';
+  },
+
+  setGoalsMemory: (memory: string): void => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.GOALS_MEMORY, memory);
   },
 
   // Observer Enabled
@@ -148,7 +203,7 @@ export const storageUtils = {
   getObserverTask: (): ObserverTask => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OBSERVER_TASK);
-      if (stored === ObserverTask.GatherUserProfile || stored === ObserverTask.ExploreGoals || stored === ObserverTask.CoachOnTraining) {
+      if (stored === ObserverTask.GatherUserProfile || stored === ObserverTask.ExploreGoals || stored === ObserverTask.CoachOnTraining || stored === ObserverTask.FreeCoaching) {
         return stored as ObserverTask;
       }
       return ObserverTask.GatherUserProfile;
@@ -160,7 +215,7 @@ export const storageUtils = {
   getObserverTaskOptional: (): ObserverTask | null => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OBSERVER_TASK);
-      if (stored === ObserverTask.GatherUserProfile || stored === ObserverTask.ExploreGoals || stored === ObserverTask.CoachOnTraining) {
+      if (stored === ObserverTask.GatherUserProfile || stored === ObserverTask.ExploreGoals || stored === ObserverTask.CoachOnTraining || stored === ObserverTask.FreeCoaching) {
         return stored as ObserverTask;
       }
       return null;

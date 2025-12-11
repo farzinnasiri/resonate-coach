@@ -1,5 +1,5 @@
 import React, { useState, KeyboardEvent } from 'react';
-import { Send } from 'lucide-react';
+import { SendHorizontal } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
@@ -19,7 +19,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
   const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      if (!isLoading) {
+        handleSubmit();
+      }
     }
   };
 
@@ -31,7 +33,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Type your message..."
-          disabled={isLoading}
           rows={1}
           className="w-full px-4 py-3 pr-16 border border-[var(--color-outline)] rounded-3xl bg-[var(--color-surface)] text-[var(--color-on-surface)] placeholder-[var(--color-on-surface-variant)] resize-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-all"
           style={{ minHeight: '52px', maxHeight: '120px' }}
@@ -41,13 +42,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
           type="button"
           onClick={handleSubmit}
           disabled={!message.trim() || isLoading}
-          className="absolute top-1/2 right-4 -translate-y-1/2 -mt-px p-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="absolute top-1/2 right-4 -translate-y-1/2 -mt-px p-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-full transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Send"
         >
-          {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
+          <SendHorizontal className="w-4 h-4" />
         </button>
       </div>
     </div>

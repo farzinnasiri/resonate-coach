@@ -21,9 +21,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [apiToken, setApiTokenState] = useState<string | null>(null);
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [openaiToken, setOpenaiToken] = useState<string | null>(null);
+  const [userName, setUserNameState] = useState<string | null>(null);
   const [coachProvider, setCoachProviderState] = useState<'google' | 'openai'>(storageUtils.getCoachProvider());
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [colorProfile, setColorProfileState] = useState<'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy'>(storageUtils.getColorProfile());
   const [isTyping, setIsTyping] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
   const [fitnessChain, setFitnessChain] = useState<FitnessCoachChain | null>(null);
@@ -32,12 +34,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   useEffect(() => {
     const token = storageUtils.getGoogleApiToken();
     const oai = storageUtils.getOpenAIApiToken();
+    const savedUserName = storageUtils.getUserName();
     const savedMessages = storageUtils.getChatHistory();
     const savedTheme = storageUtils.getThemePreference();
     
     setApiTokenState(token);
     setGoogleToken(token);
     setOpenaiToken(oai);
+    setUserNameState(savedUserName);
     setMessages(savedMessages);
     setTheme(savedTheme);
 
@@ -77,6 +81,16 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setOpenaiToken(token);
   };
 
+  const handleSetUserName = (name: string) => {
+    storageUtils.setUserName(name);
+    setUserNameState(name);
+  };
+
+  const handleClearUserName = () => {
+    storageUtils.removeUserName();
+    setUserNameState(null);
+  };
+
   const handleSetCoachProvider = (provider: 'google' | 'openai') => {
     storageUtils.setCoachProvider(provider);
     setCoachProviderState(provider);
@@ -108,7 +122,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       storageUtils.setObserverEnabled(true);
       storageUtils.clearObserverTask();
       if (fitnessChain) {
-        fitnessChain.setChatHistory([]);
+        fitnessChain.resetChat();
       }
       return [];
     });
@@ -126,7 +140,53 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    applyColorProfile(colorProfile);
   };
+
+  const applyColorProfile = (p: 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy') => {
+    const light: Record<'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy', { primary: string; onPrimary: string; container: string; onContainer: string; surface: string; surfaceLow: string; onSurface: string; onSurfaceVar: string; outline: string }> = {
+      jade: { primary: '#2BBE87', onPrimary: '#ffffff', container: '#E6F8F1', onContainer: '#0D3B2A', surface: '#F5FAF7', surfaceLow: '#EAF3EE', onSurface: '#2F3129', onSurfaceVar: '#5F6A5F', outline: '#D4E6DC' },
+      teal: { primary: '#14B8A6', onPrimary: '#ffffff', container: '#E8FAF7', onContainer: '#073B38', surface: '#F3FBFA', surfaceLow: '#E7F5F3', onSurface: '#2F3129', onSurfaceVar: '#5B7E79', outline: '#CBEDEE' },
+      slate: { primary: '#6B7CA8', onPrimary: '#ffffff', container: '#EEF2FA', onContainer: '#1E2A44', surface: '#EEF2F7', surfaceLow: '#E9EEF5', onSurface: '#334155', onSurfaceVar: '#64748B', outline: '#CBD5E1' },
+      plum: { primary: '#7B5EA9', onPrimary: '#ffffff', container: '#F2ECF9', onContainer: '#2D2240', surface: '#F6F2FA', surfaceLow: '#ECE7F5', onSurface: '#3D394A', onSurfaceVar: '#6E5C84', outline: '#D9D0E6' },
+      graphite: { primary: '#374151', onPrimary: '#ffffff', container: '#ECECEC', onContainer: '#111827', surface: '#F3F3F3', surfaceLow: '#EFEFEF', onSurface: '#2F2F2F', onSurfaceVar: '#6B6B6B', outline: '#D6D6D6' },
+      royalblue: { primary: '#0044CC', onPrimary: '#ffffff', container: '#E7EEFB', onContainer: '#0A1F52', surface: '#F1F5FE', surfaceLow: '#E3ECFC', onSurface: '#334155', onSurfaceVar: '#54698F', outline: '#C9D6F0' },
+      deepnavy: { primary: '#000C66', onPrimary: '#ffffff', container: '#E6E9FA', onContainer: '#01051F', surface: '#EEF2FA', surfaceLow: '#E2E8FA', onSurface: '#2E3344', onSurfaceVar: '#516084', outline: '#C9D3EE' },
+    };
+    const dark: Record<'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy', { surface: string; surfaceLow: string; onSurface: string; onSurfaceVar: string; outline: string }> = {
+      jade: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#9CB5A9', outline: '#1A1A1A' },
+      teal: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#94B8B2', outline: '#1A1A1A' },
+      slate: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#9CA3AF', outline: '#1A1A1A' },
+      plum: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#A79BBF', outline: '#1A1A1A' },
+      graphite: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#9CA3AF', outline: '#1A1A1A' },
+      royalblue: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#9CB2DA', outline: '#1A1A1A' },
+      deepnavy: { surface: '#000000', surfaceLow: '#121212', onSurface: '#E5E7EB', onSurfaceVar: '#8FA1CC', outline: '#1A1A1A' },
+    };
+
+    const l = light[p];
+    document.documentElement.style.setProperty('--color-primary', l.primary);
+    document.documentElement.style.setProperty('--color-on-primary', l.onPrimary);
+    document.documentElement.style.setProperty('--color-primary-container', l.container);
+    document.documentElement.style.setProperty('--color-on-primary-container', l.onContainer);
+
+    const isDark = theme === 'dark';
+    const d = dark[p];
+    document.documentElement.style.setProperty('--color-surface', isDark ? d.surface : l.surface);
+    document.documentElement.style.setProperty('--color-surface-container-low', isDark ? d.surfaceLow : l.surfaceLow);
+    document.documentElement.style.setProperty('--color-on-surface', isDark ? d.onSurface : l.onSurface);
+    document.documentElement.style.setProperty('--color-on-surface-variant', isDark ? d.onSurfaceVar : l.onSurfaceVar);
+    document.documentElement.style.setProperty('--color-outline', isDark ? d.outline : l.outline);
+  };
+
+  const setColorProfile = (p: 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy') => {
+    setColorProfileState(p);
+    storageUtils.setColorProfile(p);
+    applyColorProfile(p);
+  };
+
+  useEffect(() => {
+    applyColorProfile(colorProfile);
+  }, [colorProfile]);
 
 
   // Prompt PWA installation
@@ -136,7 +196,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   // Send message to AI
-  const sendMessageToAI = async (): Promise<string> => {
+  const sendMessageToAI = async (): Promise<string[]> => {
     if (!fitnessChain) {
       throw new Error('AI coach not initialized. Please configure your API token.');
     }
@@ -157,6 +217,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    applyColorProfile(colorProfile);
   }, [theme]);
 
 
@@ -170,6 +231,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     coachProvider,
     setCoachProvider: handleSetCoachProvider,
     
+    // User Profile
+    userName,
+    setUserName: handleSetUserName,
+    clearUserName: handleClearUserName,
+
     // Chat State
     messages,
     addMessage,
@@ -180,6 +246,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     // UI State
     theme,
     toggleTheme,
+    colorProfile,
+    setColorProfile,
     isTyping,
     setIsTyping,
     

@@ -52,16 +52,23 @@ export interface AppContextType {
   coachProvider?: 'google' | 'openai';
   setCoachProvider?: (provider: 'google' | 'openai') => void;
   
+  // User Profile
+  userName: string | null;
+  setUserName: (name: string) => void;
+  clearUserName: () => void;
+  
   // Chat State
   messages: ChatMessage[];
   addMessage: (message: ChatMessage) => void;
   clearMessages: () => void;
   // AI Interaction
-  sendMessageToAI: () => Promise<string>;
+  sendMessageToAI: () => Promise<string[]>;
   
   // UI State
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  colorProfile?: 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy';
+  setColorProfile?: (p: 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy') => void;
   isTyping: boolean;
   setIsTyping: (typing: boolean) => void;
   
@@ -74,4 +81,5 @@ export enum ObserverTask {
   GatherUserProfile = 'gather_user_profile',
   ExploreGoals = 'explore_goals',
   CoachOnTraining = 'coach_on_training',
+  FreeCoaching = 'free_coaching',
 }

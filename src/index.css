@@ -13,10 +13,10 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Core color tokens - Anthropic inspired */
-  --color-primary: #da7756; /* Anthropic terra cotta accent */
+  --color-primary: #2BBE87;
   --color-on-primary: #ffffff;
-  --color-primary-container: #f9e8e2; /* Light terra cotta tint */
-  --color-on-primary-container: #5c2c1a; /* Dark terra cotta for contrast */
+  --color-primary-container: #E6F8F1;
+  --color-on-primary-container: #0D3B2A;
   --color-surface: #eeece2; /* Anthropic warm off-white background */
   --color-on-surface: #3d3929; /* Anthropic warm dark text color */
   --color-on-surface-variant: #6b6652; /* Muted warm gray variant */

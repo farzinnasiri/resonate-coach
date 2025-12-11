@@ -8,7 +8,7 @@ import { Trash2 } from 'lucide-react';
 import type { ChatMessage } from '@/types/index';
 
 export const ChatInterface: React.FC = () => {
-  const { messages, addMessage, isTyping, apiToken, googleToken, openaiToken, coachProvider, setCoachProvider, clearMessages } = useApp();
+  const { messages, addMessage, isTyping, apiToken, googleToken, openaiToken, coachProvider, setCoachProvider, clearMessages, clearUserName, setIsTyping, colorProfile, setColorProfile } = useApp();
   const { sendMessageToAI } = useAI();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,17 +29,40 @@ export const ChatInterface: React.FC = () => {
     };
     addMessage(userMessage);
     try {
-      // Send to AI and get response
-      const aiResponse = await sendMessageToAI();
-      
-      // Add AI response
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: aiResponse,
-        role: 'assistant',
-        timestamp: new Date(),
+      const aiBubbles = await sendMessageToAI();
+      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      const computeDelay = (t: string) => {
+        const len = t.length;
+        const wpm = 80;
+        const cpm = wpm * 5;
+        const perCharMs = 60000 / cpm;
+        const scale = 0.3;
+        const base = Math.round(Math.min(1800, Math.max(250, len * perCharMs * scale)));
+        const jitter = Math.round(base * (Math.random() * 0.3 - 0.15));
+        return Math.max(250, base + jitter);
       };
-      addMessage(aiMessage);
+      const postGap = () => {
+        const base = 300;
+        const jitter = Math.round(base * (Math.random() * 0.4 - 0.2));
+        return Math.max(200, base + jitter);
+      };
+      setIsTyping(true);
+      for (let i = 0; i < aiBubbles.length; i++) {
+        const bubble = aiBubbles[i];
+        await sleep(computeDelay(bubble));
+        setIsTyping(false);
+        const aiMessage: ChatMessage = {
+          id: `${Date.now()}-${i + 1}`,
+          content: bubble,
+          role: 'assistant',
+          timestamp: new Date(),
+        };
+        addMessage(aiMessage);
+        if (i < aiBubbles.length - 1) {
+          await sleep(postGap());
+          setIsTyping(true);
+        }
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to get response from AI');
     } finally {
@@ -73,9 +96,25 @@ export const ChatInterface: React.FC = () => {
             OpenAI
           </button>
         </div>
-        <DarkModeToggle />
+        <div className="flex items-center gap-2">
+          <select
+            value={colorProfile || 'jade'}
+            onChange={(e) => setColorProfile?.(e.target.value as 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy')}
+            className="h-9 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 outline-none"
+            aria-label="Accent color profile"
+          >
+            <option value="jade">Alpine Jade</option>
+            <option value="teal">Tropic Teal</option>
+            <option value="slate">Nordic Slate</option>
+            <option value="plum">Royal Plum</option>
+            <option value="graphite">Obsidian</option>
+            <option value="royalblue">Royal Blue</option>
+            <option value="deepnavy">Deep Navy</option>
+          </select>
+          <DarkModeToggle />
+        </div>
         <button
-          onClick={() => { clearMessages(); toast.success('Conversation cleared'); }}
+          onClick={() => { clearMessages(); clearUserName?.(); toast.success('Conversation and name cleared'); }}
           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
           aria-label="Reset chat"
         >
@@ -85,27 +124,13 @@ export const ChatInterface: React.FC = () => {
 
       {/* Messages */}
       <div className="flex-1 min-h-0">
-        <MessageList messages={messages} />
+        <MessageList messages={messages} isTyping={isTyping} />
       </div>
 
       {/* Input */}
       <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
 
-      {/* Typing Indicator */}
-      {isTyping && (
-        <div className="fixed bottom-20 left-0 right-0 px-4 z-10">
-          <div className="max-w-4xl mx-auto px-4 py-2">
-            <div className="flex items-center space-x-2 text-sm text-[var(--color-on-surface-variant)]">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-[var(--color-on-surface-variant)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-              <span>Responding...</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Inline typing bubble handled in MessageList */}
     </div>
   );
 };
