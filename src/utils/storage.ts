@@ -55,16 +55,11 @@ export const storageUtils = {
 
   // Dual provider tokens
   getGoogleApiToken: (): string | null => {
-    return (
-      localStorage.getItem(LOCAL_STORAGE_KEYS.GOOGLE_API_TOKEN) ||
-      localStorage.getItem(LOCAL_STORAGE_KEYS.API_TOKEN)
-    );
+    return localStorage.getItem(LOCAL_STORAGE_KEYS.GOOGLE_API_TOKEN);
   },
 
   setGoogleApiToken: (token: string): void => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.GOOGLE_API_TOKEN, token);
-    // Keep legacy key in sync for backward compatibility
-    localStorage.setItem(LOCAL_STORAGE_KEYS.API_TOKEN, token);
   },
 
   getOpenAIApiToken: (): string | null => {
@@ -73,6 +68,15 @@ export const storageUtils = {
 
   setOpenAIApiToken: (token: string): void => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.OPENAI_API_TOKEN, token);
+  },
+
+  removeGoogleApiToken: (): void => {
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.GOOGLE_API_TOKEN);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.API_TOKEN);
+  },
+
+  removeOpenAIApiToken: (): void => {
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.OPENAI_API_TOKEN);
   },
 
   // Coach provider toggle

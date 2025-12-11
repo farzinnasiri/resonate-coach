@@ -49,6 +49,8 @@ export interface AppContextType {
   googleToken?: string | null;
   openaiToken?: string | null;
   setOpenAIToken?: (token: string) => void;
+  removeOpenAIToken?: () => void;
+  removeGoogleToken?: () => void;
   coachProvider?: 'google' | 'openai';
   setCoachProvider?: (provider: 'google' | 'openai') => void;
   

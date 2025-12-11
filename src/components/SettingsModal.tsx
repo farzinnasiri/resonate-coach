@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Settings } from 'lucide-react';
 import { storageUtils } from '@/utils/storage';
+import { useApp } from '@/context/AppContext';
 import { toast } from 'sonner';
 
 type Props = {
@@ -8,12 +9,17 @@ type Props = {
 };
 
 export const SettingsModal: React.FC<Props> = ({ onClose }) => {
+  const { googleToken, openaiToken, setApiToken, setOpenAIToken, removeGoogleToken, removeOpenAIToken } = useApp();
   const [profileMemory, setProfileMemory] = useState('');
   const [goalsMemory, setGoalsMemory] = useState('');
+  const [googleKey, setGoogleKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
 
   useEffect(() => {
     setProfileMemory(storageUtils.getProfileMemory());
     setGoalsMemory(storageUtils.getGoalsMemory());
+    setGoogleKey(googleToken || storageUtils.getGoogleApiToken() || '');
+    setOpenaiKey(openaiToken || storageUtils.getOpenAIApiToken() || '');
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -32,6 +38,39 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
     toast.success('Goals memory saved');
   };
 
+  const saveGoogleKey = () => {
+    const trimmed = googleKey.trim();
+    if (!trimmed) {
+      toast.error('Gemini API key cannot be empty');
+      return;
+    }
+    setApiToken(trimmed);
+    toast.success('Gemini API key saved');
+  };
+
+  const removeGoogleKey = () => {
+    removeGoogleToken?.();
+    setGoogleKey('');
+    toast.success('Gemini API key removed');
+    onClose();
+  };
+
+  const saveOpenAIKey = () => {
+    const trimmed = openaiKey.trim();
+    if (!trimmed) {
+      toast.error('OpenAI API key cannot be empty');
+      return;
+    }
+    setOpenAIToken?.(trimmed);
+    toast.success('OpenAI API key saved');
+  };
+
+  const removeOpenAIKey = () => {
+    removeOpenAIToken?.();
+    setOpenaiKey('');
+    toast.success('OpenAI API key removed');
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300"
@@ -40,7 +79,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
       role="dialog"
     >
       <div
-        className="w-full max-w-2xl bg-[var(--color-surface)] rounded-2xl shadow-2xl p-6 border border-[var(--color-outline)]"
+        className="w-full max-w-3xl bg-[var(--color-surface)] rounded-2xl shadow-2xl p-5 border border-[var(--color-outline)] max-h-[75vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -62,7 +101,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-5">
           <section>
             <label htmlFor="profile-memory" className="block text-sm font-semibold mb-2" style={{ color: 'var(--color-on-surface-variant)' }}>
               Profile Memory
@@ -71,7 +110,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
               id="profile-memory"
               value={profileMemory}
               onChange={(e) => setProfileMemory(e.target.value)}
-              className="w-full min-h-32 h-32 px-4 py-3 rounded-xl border bg-white/60 dark:bg-black/40 outline-none transition-all shadow-sm"
+              className="w-full min-h-24 h-24 px-4 py-3 rounded-xl border bg-white/60 dark:bg-black/40 outline-none transition-all shadow-sm"
               style={{ borderColor: 'var(--color-outline)', color: 'var(--color-on-surface)', caretColor: 'var(--color-primary)' }}
               aria-label="Edit profile memory"
             />
@@ -95,7 +134,7 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
               id="goals-memory"
               value={goalsMemory}
               onChange={(e) => setGoalsMemory(e.target.value)}
-              className="w-full min-h-32 h-32 px-4 py-3 rounded-xl border bg-white/60 dark:bg-black/40 outline-none transition-all shadow-sm"
+              className="w-full min-h-24 h-24 px-4 py-3 rounded-xl border bg-white/60 dark:bg-black/40 outline-none transition-all shadow-sm"
               style={{ borderColor: 'var(--color-outline)', color: 'var(--color-on-surface)', caretColor: 'var(--color-primary)' }}
               aria-label="Edit goals memory"
             />
@@ -110,9 +149,74 @@ export const SettingsModal: React.FC<Props> = ({ onClose }) => {
               </button>
             </div>
           </section>
+
+          <section>
+            <label htmlFor="google-key" className="block text-sm font-semibold mb-2" style={{ color: 'var(--color-on-surface-variant)' }}>
+              Gemini API Key
+            </label>
+            <input
+              id="google-key"
+              type="text"
+              value={googleKey}
+              onChange={(e) => setGoogleKey(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border bg-white/60 dark:bg-black/40 outline-none transition-all shadow-sm"
+              style={{ borderColor: 'var(--color-outline)', color: 'var(--color-on-surface)', caretColor: 'var(--color-primary)' }}
+              aria-label="Edit Gemini API key"
+            />
+            <div className="mt-3 flex justify-between">
+              <button
+                onClick={removeGoogleKey}
+                className="px-4 py-2 rounded-xl font-semibold transition-all"
+                style={{ backgroundColor: 'color-mix(in oklab, var(--color-outline) 40%, transparent)', color: 'var(--color-on-surface)' }}
+                aria-label="Remove Gemini API key"
+              >
+                Remove Key
+              </button>
+              <button
+                onClick={saveGoogleKey}
+                className="px-4 py-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]"
+                style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)', boxShadow: '0 10px 25px -5px color-mix(in oklab, var(--color-primary) 35%, transparent)' }}
+                aria-label="Save Gemini API key"
+              >
+                Save Gemini Key
+              </button>
+            </div>
+          </section>
+
+          <section>
+            <label htmlFor="openai-key" className="block text-sm font-semibold mb-2" style={{ color: 'var(--color-on-surface-variant)' }}>
+              OpenAI API Key
+            </label>
+            <input
+              id="openai-key"
+              type="text"
+              value={openaiKey}
+              onChange={(e) => setOpenaiKey(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border bg-white/60 dark:bg黑色/40 outline-none transition-all shadow-sm"
+              style={{ borderColor: 'var(--color-outline)', color: 'var(--color-on-surface)', caretColor: 'var(--color-primary)' }}
+              aria-label="Edit OpenAI API key"
+            />
+            <div className="mt-3 flex justify-between">
+              <button
+                onClick={removeOpenAIKey}
+                className="px-4 py-2 rounded-xl font-semibold transition-all"
+                style={{ backgroundColor: 'color-mix(in oklab, var(--color-outline) 40%, transparent)', color: 'var(--color-on-surface)' }}
+                aria-label="Remove OpenAI API key"
+              >
+                Remove Key
+              </button>
+              <button
+                onClick={saveOpenAIKey}
+                className="px-4 py-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]"
+                style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)', boxShadow: '0 10px 25px -5px color-mix(in oklab, var(--color-primary) 35%, transparent)' }}
+                aria-label="Save OpenAI API key"
+              >
+                Save OpenAI Key
+              </button>
+            </div>
+          </section>
         </div>
       </div>
     </div>
   );
 };
-

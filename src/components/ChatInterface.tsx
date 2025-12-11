@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useApp, useAI } from '@/context/AppContext';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { DarkModeToggle } from './DarkModeToggle';
-import { Trash2, Settings } from 'lucide-react';
+import { Trash2, Settings, Palette, Check } from 'lucide-react';
 import type { ChatMessage } from '@/types/index';
 import { SettingsModal } from '@/components/SettingsModal';
 
@@ -13,6 +13,15 @@ export const ChatInterface: React.FC = () => {
   const { sendMessageToAI } = useAI();
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsThemeMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     const hasToken = coachProvider === 'openai' ? !!openaiToken : !!googleToken || !!apiToken;
@@ -99,20 +108,45 @@ export const ChatInterface: React.FC = () => {
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <select
-            value={colorProfile || 'jade'}
-            onChange={(e) => setColorProfile?.(e.target.value as 'jade' | 'teal' | 'slate' | 'plum' | 'graphite' | 'royalblue' | 'deepnavy')}
-            className="h-9 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 outline-none"
-            aria-label="Accent color profile"
-          >
-            <option value="jade">Alpine Jade</option>
-            <option value="teal">Tropic Teal</option>
-            <option value="slate">Nordic Slate</option>
-            <option value="plum">Royal Plum</option>
-            <option value="graphite">Obsidian</option>
-            <option value="royalblue">Royal Blue</option>
-            <option value="deepnavy">Deep Navy</option>
-          </select>
+          <div className="relative">
+            <button
+              onClick={() => setIsThemeMenuOpen((v) => !v)}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+              aria-label="Select theme"
+              aria-haspopup="menu"
+              aria-expanded={isThemeMenuOpen}
+            >
+              <Palette className="w-5 h-5" />
+            </button>
+            {isThemeMenuOpen && (
+              <div className="absolute right-0 mt-2 w-44 rounded-lg border bg-[var(--color-surface)] shadow-xl z-50" style={{ borderColor: 'var(--color-outline)' }}>
+                {[
+                  { key: 'jade', label: 'Alpine Jade' },
+                  { key: 'teal', label: 'Tropic Teal' },
+                  { key: 'slate', label: 'Nordic Slate' },
+                  { key: 'plum', label: 'Royal Plum' },
+                  { key: 'graphite', label: 'Obsidian' },
+                  { key: 'royalblue', label: 'Royal Blue' },
+                  { key: 'deepnavy', label: 'Deep Navy' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => { setColorProfile?.(key as any); setIsThemeMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
+                      colorProfile === (key as any)
+                        ? 'bg-gray-100 dark:bg-gray-800'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    style={{ color: 'var(--color-on-surface)' }}
+                    role="menuitem"
+                  >
+                    <span>{label}</span>
+                    {colorProfile === (key as any) && <Check className="w-4 h-4" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <DarkModeToggle />
         </div>
         <button

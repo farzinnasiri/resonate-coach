@@ -81,6 +81,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setOpenaiToken(token);
   };
 
+  const handleRemoveOpenAIToken = () => {
+    storageUtils.removeOpenAIApiToken();
+    setOpenaiToken(null);
+    if (coachProvider === 'openai' && googleToken) {
+      storageUtils.setCoachProvider('google');
+      setCoachProviderState('google');
+      const chain = new FitnessCoachChain(googleToken);
+      chain.setChatHistory(messages);
+      setFitnessChain(chain);
+    }
+  };
+
   const handleSetUserName = (name: string) => {
     storageUtils.setUserName(name);
     setUserNameState(name);
@@ -99,6 +111,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       chain.setChatHistory(messages);
       setFitnessChain(chain);
     }
+  };
+
+  const handleRemoveGoogleToken = () => {
+    storageUtils.removeGoogleApiToken();
+    setApiTokenState(null);
+    setGoogleToken(null);
+    setFitnessChain(null);
   };
 
   // Add message to chat
@@ -228,6 +247,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     googleToken,
     openaiToken,
     setOpenAIToken: handleSetOpenAIToken,
+    removeOpenAIToken: handleRemoveOpenAIToken,
+    removeGoogleToken: handleRemoveGoogleToken,
     coachProvider,
     setCoachProvider: handleSetCoachProvider,
     
