@@ -4,13 +4,15 @@ import { useApp, useAI } from '@/context/AppContext';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { DarkModeToggle } from './DarkModeToggle';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Settings } from 'lucide-react';
 import type { ChatMessage } from '@/types/index';
+import { SettingsModal } from '@/components/SettingsModal';
 
 export const ChatInterface: React.FC = () => {
   const { messages, addMessage, isTyping, apiToken, googleToken, openaiToken, coachProvider, setCoachProvider, clearMessages, clearUserName, setIsTyping, colorProfile, setColorProfile } = useApp();
   const { sendMessageToAI } = useAI();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleSendMessage = async (content: string) => {
     const hasToken = coachProvider === 'openai' ? !!openaiToken : !!googleToken || !!apiToken;
@@ -114,6 +116,13 @@ export const ChatInterface: React.FC = () => {
           <DarkModeToggle />
         </div>
         <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+          aria-label="Open settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+        <button
           onClick={() => { clearMessages(); clearUserName?.(); toast.success('Conversation and name cleared'); }}
           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
           aria-label="Reset chat"
@@ -131,6 +140,10 @@ export const ChatInterface: React.FC = () => {
       <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
 
       {/* Inline typing bubble handled in MessageList */}
+
+      {isSettingsOpen && (
+        <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+      )}
     </div>
   );
 };
